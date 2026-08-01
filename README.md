@@ -1,149 +1,74 @@
-THIS PROJECT IS OUTDATED AND NOT MAINTAINED ANYMORE
-===
+> **Note from the Author**
+> 
+> Unfortunately, this repo is not actively maintained anymore. There are basically three reasons:
+> * There is an issue with the camera that causes it to freeze after some time, and then resetting it (by unplugging it and plugging back in) could result to the yellow LED issue. Throughout early last year, I've been on this loop and I haven't been able to find the solution to it and break the loop.
+> * I've been wanting to get deeper into the camera subsystem (starting specifically with the test_encode program) and hopefully do some cool stuff wtih it, but I haven't been able to. I know there's the GM8136 SDK, which I believe is what the camera is using, but I'm unsuccessful in doing so.
+> * Lastly, I've moved on to other cameras. I'm using Yi cameras now, so I'm not that far off, and specifically picked ones that have prominent hacked firmwares (so as to not depend on cloud features or have stuff that call home). If you are curious, I use [this one](https://github.com/alienatedsec/yi-hack-v5) from @alienatedsec.
+> 
+> For now, this camera is in my drawer, sadly not being used even though it's still working fine. I'm not counting on it, but hopefully someone else will be able to progress further, or maybe Xiaomi or someone else leaks the source code so there can be renewed interest.
 
+# Mijia 360 1080p (1st-gen) camera hack
 
-----
+This is an indirect fork of [niclet/xiaomi_hack](https://github.com/niclet/xiaomi_hack) (big thanks!) for the first-gen Mijia 360 1080p IP camera (JTSXJ01CM), with additional features, some probably inspired from different Mi/Yi camera hacks, just to get this to work properly:
 
-===
-- WARNING - DISCLAIMER -
-===
-**Many files on the Mijia 360 are writable. Be very careful when you modify files on it, you might brick it forever.**
+* Enable/disable cloud (Mi Home)
+* SSH support
+* RTSP support
+* Night vision (on/off/auto)
 
-----
+However, there are a couple of features not working on Disabled Cloud mode, namely the voice translations; in this case, voice is not working at all. I also wanted to get even more features in here like motor control ~~and night mode~~, but they're locked up in a library named libdrv.so (at least, according to my initial research).
 
-xiaomi_hack project
-===================
+Unfortunately, I do not have enough time or brains to reverse-engineer either niclet's library (libxiaomihack.so) or libdrv.so, but if you are able to get a hold of their sources, or any other relevant source or clues/hints, just hit me up via [Twitter](https://twitter.com/JMacalinao).
 
-Special thanks go to **fritz-smh** : https://github.com/fritz-smh/yi-hack
+## Recommended firmware
 
-This xiaomi_hack project has been totally inspired from its own project.
+The firmware I'm currently using is version **3.3.10_2017121915** that I upgraded OTA via Mi Home years ago, and I haven't upgraded to anything beyond that, so I can only recommend firmwares less than or equal to that. You might be able to downgrade your firmware (if you have a Windows machine) by going to a particular Russian site and getting an older firmware and the flashing tool, but I haven't tested that yet.
 
-Purpose
-=======
+## Installation
 
-This project is a collection of scripts and binary files to hack various Xiaomi cameras :
+0. Set up the camera with the Mi Home app. Make sure the WiFi credentials are correct. (Thanks to @Peter71131, [#3](https://github.com/JMacalinao/mijia360-1g-hack/issues/3#issuecomment-734204079))
+1. Copy all files to your SD card.
+2. Edit config.ini.
+3. Insert SD card to the camera.
+4. Plug in the camera.
 
-* Mijia 360
+## Usage
 
-<img src="mijia360.jpg" alt="Xiaomi Mijia 360" width="30%"/>
-
-* *to be completed soon...*
-
-These cameras have the following default features :
-
-* wifi setup from a smartphone application
-* video data sent over the network on Chinese servers in the cloud to allow people to view camera data from their smartphone wherever they are
-* local video storage on a SD card
-* camera speaks Chinese
-
-
-This hack intends to provide following features :
-
-* Telnet server
 * FTP server
+  * Port 21
+  * Login: root, no password
+* SSH server
+  * Port 22
+  * Login: root, Password: MCH_ROOT_PASSWORD value in config.ini
+* Telnet server
+  * Port 23
+  * Login: root, Password: MCH_ROOT_PASSWORD value in config.ini
 * RTSP server
-* Custom timezone
-* Custom voices
+  * Stream 1 (1080p): rtsp://{IP}/stream1
+  * Stream 2 (360p): rtsp://{IP}/stream2
 
-Installation on the camera
-==========================
+## LED indicator on startup (Disabled Cloud mode)
 
-The memory card must stay in the camera ! If you remove it, the camera will start without using the hack.
+Solid yellow - It's turned on. Hope and pray that it doesn't get stuck in this mode.
 
-Prepare the memory card
------------------------
+Flashing green - Setting up the camera's network configuration and connecting to Wi-Fi.
 
-Clone this repository on a computer :
+Solid red - Wi-Fi connection failed. Maybe the config is wrong?
 
-    git clone http://github.com/niclet/xiaomi_hack.git
-    
-Then, format a micro SD card in fat32 (vfat) format and copy the content of the **xiaomi_hack/sd/** folder at the root of your memory card.
+Flashing blue - Connected to Wi-Fi, setting up the rest of the services (e.g. NTP, RSTP, etc.)
 
-Start the camera
-----------------
+Solid blue (or off, if you disabled it) - Startup complete.
 
-* If plugged, unplug the camera
-* Insert the memory card in the camera
-* Plug the camera
-* Follow instructions to pair with your mobile app. This is only needed the first time.
+## Stuck in solid yellow LED?
 
-The camera will start. The led will indicate the current status :
+Before pushing the reset button or getting a recovery image, try the following first:
 
-* yellow : camera startup
-* blue blinking : network configuration in progress (connect to wifi, set up the IP address)
-* blue : network configuration is OK. Camera is ready to use.
+1. Remove the SD card.
+2. Plug in the camera.
+3. Wait for 30 seconds.
+4. If the LED is still solid yellow, unplug the camera.
+5. Do #3 and #4 five to six times.
 
-Use the camera
-==============
+## License
 
-Telnet server
--------------
-
-The telnet server runs on port 23.
-
-Default password for **root** user is **imi_ipc**
-
-FTP server
-----------
-
-The FTP server runs on port 21.
-
-No authentication is needed, you can use anonymous user.
-
-RTSP server
------------
-
-The RTSP server is not yet available.
-
-Custom timezone
----------------
-
-You can customize timezone in the **config.cfg** file with the **XIAOMI\_HACK\_TIMEZONE** variable.
-
-Custom voices
--------------
-
-Following voices are available:
-
-* English
-* French
-
-
-BETA !
-======
-
-For now, it is just a proof of concept. Many work has still to be done.
-
-
-How it works ?
-==============
-
-Hack content
-------------
-
-````
-ext-pro.sh			           Mijia 360 camera backdoor
-xiaomi_hack/                   Hacks folder
-  config.cfg                   Configuration file
-  logs/                        Logs folder, you'll find various logs there
-  mijia360/                    Mijia 360 hack
-    audio/
-      common/                  This folder contains sounds files which doesn't require any translation
-      en/                      This folder contains English voices
-      fr/                      This folder contains French voices
-    bin/
-      tcpsvd                   TCP Service Daemon (http://smarden.org/ipsvd/index.html) to launch FTP Server Daemon (ftpd)
-    sh/
-      miio_post.sh             This script is run after official miio.sh
-      miio_pre.sh              This script is run before official miio.sh
-    shadow.backup              Backup of original /etc/shadow, don't modify it in anyway !
-````
-
-Hack customization
-------------------
-
-Each camera hack can be customized from its **config.cfg** file.
-
-Custom voices are still in beta stage, you may still hear Chinese voices. That's why audio logs are activated through XIAOMI_HACK_LANGUAGE_TRACES=YES
-
-In this case, a log file called **mijia360_audio.log** will appear in **xiaomi_hack/logs** folder. If you hear Chinese voice, please open a bug report and provide this log file.
+I'm kinda lazy to get into jargon, but basically, everything is provided as-is, and I am not liable if using this code bricks your device, causes a nuclear holocaust, or anything in between.
